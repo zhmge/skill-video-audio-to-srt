@@ -1,0 +1,11 @@
+# skill 本地虚拟环境与缓存
+.venv-audio/
+
+# Python 产物
+__pycache__/
+*.pyc
+*.pyo
+
+# 运行时中间产物（segments.json / fixes.json 等属于用户工作区，不入库）
+*.m4s
+*.wav

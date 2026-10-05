@@ -1,0 +1,9 @@
+# 版本组合为 2026-10 实测验证（Python 3.13 / Windows / RTX 50 系 GPU）。
+# ctranslate2 与 nvidia-* 的配套关系不可随意升级，详见 references/environment-setup.md。
+faster-whisper==1.2.1
+ctranslate2==4.8.2
+nvidia-cublas-cu12==12.9.2.10
+nvidia-cudnn-cu12==9.27.0.42
+nvidia-cuda-nvrtc-cu12==12.9.86
+numpy==2.5.3
+imageio-ffmpeg==0.5.1
