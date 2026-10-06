@@ -60,14 +60,14 @@
 ### 9. `找不到 ffmpeg`
 
 - **原因**：imageio-ffmpeg 未装且系统 PATH 无 ffmpeg。
-- **处置**：当前 venv 内 `pip install imageio-ffmpeg`（最省事），或系统级
+- **处置**：在运行环境内 `pip install imageio-ffmpeg`（最省事），或系统级
   安装 ffmpeg。winget 装完**新开终端** PATH 才生效。
 
-### 10. `模型目录不存在`
+### 10. `模型目录不存在` / `未指定模型目录`
 
-- **原因**：默认路径 `~/.workbuddy/models/fw-large-v3/` 未放置模型。
+- **原因**：未设置 `FW_MODEL_DIR`，或它指向的目录里没有模型文件。
 - **处置**：按 `environment-setup.md` 第 2 节下载（hf-mirror 直链 +
-  字节数校验），或用 `--model` / 环境变量 `FW_MODEL_DIR` 指向已有模型。
+  字节数校验），用 `FW_MODEL_DIR` 或 `--model` 指向该目录。
 
 ### 11. GPU 转写比预期慢很多
 

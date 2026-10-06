@@ -28,7 +28,7 @@
 ## 依赖
 
 - Windows / Linux / macOS，Python 3.13
-- 模型：faster-whisper large-v3（默认读 `~/.workbuddy/models/fw-large-v3/`，可用 `--model` 或 `FW_MODEL_DIR` 指向别处）
+- 模型：faster-whisper large-v3（由环境变量 `FW_MODEL_DIR` 指定模型目录，可用 `--model` 覆盖）
 - ffmpeg（脚本内置三级回退：imageio-ffmpeg → 系统 PATH → 报错指引）
 - Python 包见 `requirements.txt`——版本组合为 RTX 50 系 GPU 上实测验证的，`ctranslate2` 与 `nvidia-*` 的配套关系不应随意升级
 
@@ -36,7 +36,7 @@ NVIDIA GPU 走 CUDA + float16；无 N 卡时加 `--cpu` 退回 CPU 推理（明�
 
 ## 开始使用
 
-整个目录放入 agent skills 目录即可，`SKILL.md` 是入口。首次使用需按 `references/environment-setup.md` 创建 `.venv-audio/` 并下载模型。
+整个目录放入 agent skills 目录即可，`SKILL.md` 是入口。运行前需有一个装好 `requirements.txt` 的 Python 环境（本机为 conda 环境 `skill-asr`），并通过 `FW_MODEL_DIR` 指向模型目录；环境搭建与模型获取见 `references/environment-setup.md`。
 
 ## 产物
 

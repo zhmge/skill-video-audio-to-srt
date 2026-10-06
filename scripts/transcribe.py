@@ -9,7 +9,7 @@ transcribe.py — 音频/视频 → faster-whisper 本地转写 → segments.jso
 选项:
   --out-dir DIR     产物目录（默认：输入文件所在目录）
   --model DIR       模型目录。优先级：本参数 > 环境变量 FW_MODEL_DIR
-                    > 默认 ~/.workbuddy/models/fw-large-v3
+                    （未设 FW_MODEL_DIR 时直接报错，不会静默换小模型）
   --language LANG   语言代码（如 zh、en）。默认自动检测；
                     短片段建议显式指定以防误判。
   --cpu             强制 CPU 推理（int8）。默认走 GPU（float16）。
@@ -33,9 +33,7 @@ import wave
 
 EXIT_OK, EXIT_ARGS, EXIT_ENV, EXIT_TRANSCRIBE = 0, 2, 3, 7
 
-DEFAULT_MODEL = os.path.join(
-    os.path.expanduser("~"), ".workbuddy", "models", "fw-large-v3"
-)
+DEFAULT_MODEL = os.environ.get("FW_MODEL_DIR", "")
 
 
 def die(code: int, msg: str) -> None:
@@ -138,12 +136,19 @@ def main() -> None:
         or os.environ.get("FW_MODEL_DIR")
         or DEFAULT_MODEL
     )
+    if not model_dir:
+        die(
+            EXIT_ENV,
+            "未指定模型目录：请用 --model 给出路径，或设置环境变量 FW_MODEL_DIR。\n"
+            "模型获取方法见 skill 的 references/environment-setup.md"
+            "（hf-mirror 直链下载 5 个文件 + 字节数校验）",
+        )
     model_dir = os.path.expanduser(model_dir)
     if not os.path.isdir(model_dir):
         die(
             EXIT_ENV,
             "模型目录不存在: {}\n获取方法见 skill 的 references/environment-setup.md"
-            "（hf-mirror 直链下载 4 个文件 + 字节数校验）".format(model_dir),
+            "（hf-mirror 直链下载 5 个文件 + 字节数校验）".format(model_dir),
         )
 
     # ffmpeg（在 import faster_whisper 之前定位，缺依赖尽早报错）

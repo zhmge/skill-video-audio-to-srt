@@ -5,34 +5,34 @@
 
 ## 1. Python 依赖
 
-要求 Python ≥ 3.9（实测 3.13）。在 skill 目录内建独立 venv，避免污染全局：
+要求 Python ≥ 3.9（实测 3.13）。**建一个 conda 环境**承载依赖（本机为 `skill-asr`），
+不要把环境放进 skill 目录——skill 仓库只放文本与脚本：
 
 ```bash
-cd <skill目录>/video-audio-to-srt
-python -m venv .venv-audio
-# Windows (bash):
-.venv-audio/Scripts/python.exe -m pip install -r requirements.txt
-# Linux/macOS:
-# .venv-audio/bin/pip install -r requirements.txt
+conda create -n skill-asr python=3.13 -y
+conda run -n skill-asr pip install -r requirements.txt
 ```
+
+下文用 `<python>` 指代该环境的解释器。装完可用 `pip check` 复核依赖自洽。
 
 `requirements.txt` 中 `ctranslate2` 与 `nvidia-*` 各版本是配套实测组合，
 **不要单独升级其中某一个**（CUDA 12.x 系列内部强耦合）。
 
 > 该组合**不包含 torch**——faster-whisper(ctranslate2) 直接调 cublas/cudnn，
-> 比常规 GPU 推理栈轻得多。
+> 比常规 GPU 推理栈轻得多。**刻意不装**，装了只是白占磁盘。
 
 ## 2. 模型获取（不入 skill，独立存放）
 
-默认模型目录约定为 `~/.workbuddy/models/fw-large-v3/`（跨项目复用，路径直观）。
-也可用环境变量 `FW_MODEL_DIR` 或 `transcribe.py --model` 指向任意位置。
+模型目录由环境变量 `FW_MODEL_DIR` 指定；`transcribe.py --model` 可覆盖它。
+**未设且未传 `--model` 时脚本直接报错**，不会静默换小模型。
+目录放哪儿都可以，建议放在跨项目复用的公共位置。
 
 faster-whisper 版 large-v3（CT2 float16 格式，来源 HuggingFace `Systran/faster-whisper-large-v3`），
 经国内镜像 hf-mirror 直链下载 5 个文件（**直连即可，无需代理**）：
 
 ```bash
-mkdir -p ~/.workbuddy/models/fw-large-v3
-cd ~/.workbuddy/models/fw-large-v3
+export FW_MODEL_DIR=/path/to/fw-large-v3     # 自行选定并记住
+mkdir -p "$FW_MODEL_DIR" && cd "$FW_MODEL_DIR"
 BASE=https://hf-mirror.com/Systran/faster-whisper-large-v3/resolve/main
 for f in config.json preprocessor_config.json tokenizer.json vocabulary.json model.bin; do
   curl -L -o "$f" "$BASE/$f"
@@ -81,12 +81,14 @@ PowerShell `Get-ChildItem | Select-Object Name,Length`。
 
 非 Windows（Linux/macOS）说明：脚本的 DLL 注册只在 Windows 生效；
 Linux 上若报找不到 libcublas，设置
-`export LD_LIBRARY_PATH=<venv>/lib/python*/site-packages/nvidia/{cublas,cudnn,cuda_nvrtc}/lib:$LD_LIBRARY_PATH`。
+`export LD_LIBRARY_PATH=<site-packages>/nvidia/{cublas,cudnn,cuda_nvrtc}/lib:$LD_LIBRARY_PATH`
+（`<site-packages>` 指 `<python>` 所在环境的 site-packages，可用
+`<python> -c "import sysconfig;print(sysconfig.get_paths()['purelib'])"` 查得）。
 
-## 本机实测参考值（2026-10，示例）
+## 本机实测参考值（2026-10）
 
 - Windows 11 + RTX 5070 Ti Laptop（Blackwell），31.4 GB 内存
-- Python 3.13.12（managed venv），faster-whisper 1.2.1 + ctranslate2 4.8.2
+- conda 环境 `skill-asr`（Python 3.13.16），faster-whisper 1.2.1 + ctranslate2 4.8.2
 - nvidia-cublas-cu12 12.9.2.10 / nvidia-cudnn-cu12 9.27.0.42
-- 模型 `~/.workbuddy/models/fw-large-v3/`，5 文件共 3,090,835,702 字节
-- 模型加载 3.5s；538 段 / 12 分钟音频约 102s 完成
+- 模型加载 3.5~7s；538 段 / 12 分钟音频约 102s 完成
+- 模型实际路径等本机信息记录在环境根目录的登记表里（不在 skill 内）

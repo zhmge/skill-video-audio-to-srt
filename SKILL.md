@@ -60,18 +60,17 @@ B 站硬字幕视频 → 匿名取音频 → GPU 转写 538 段 → 75 处校对
 
 ### ③ 环境自检
 依次检查（缺哪项补哪项，补法见 `references/environment-setup.md`）：
-1. skill 目录下有 `.venv-audio/`（没有 → 按文档第 1 节创建）；
-2. 模型目录存在（默认 `~/.workbuddy/models/fw-large-v3/`，
-   可被 `--model` 或环境变量 `FW_MODEL_DIR` 覆盖；
-   不存在 → 报错并附文档第 2 节的获取命令，**不要自行换小模型顶替**）；
+1. 有一个名为 `skill-asr` 的 conda 环境（环境清单在环境根目录的 `AGENT.md` 里，
+   即 `<conda根>/envs/AGENT.md`）；下面的 `<python>` 都指该环境的解释器；
+2. 模型目录存在（由环境变量 `FW_MODEL_DIR` 指定，可被 `--model` 覆盖；
+   未设或不存在 → 报错并附文档第 2 节的获取命令，**不要自行换小模型顶替**）；
 3. ffmpeg（脚本内置三级回退：imageio-ffmpeg → 系统 PATH → 报错指引，一般无需干预）。
 
 ### ④ 转写
 ```bash
-.venv-audio/Scripts/python.exe scripts/transcribe.py <输入文件> \
+<python> scripts/transcribe.py <输入文件> \
   --out-dir <输出目录> [--source-url <链接>] [--language zh] [--cpu]
 ```
-（Linux/macOS 用 `.venv-audio/bin/python`。）
 - 先根据音频时长向用户**报告预计耗时**（GPU 约为音频时长的 1/7）。
 - 产物：`segments.json`（机器用）+ `proofread.tsv`（校对视图，Excel 可开）。
 - 默认走 GPU + float16（脚本写死，勿改）；无 N 卡加 `--cpu`。
@@ -91,7 +90,7 @@ B 站硬字幕视频 → 匿名取音频 → GPU 转写 538 段 → 75 处校对
    **原则：修错不改写**——只改识别错误，不润色口癖、不改句式；
 4. 生成最终 SRT：
    ```bash
-   .venv-audio/Scripts/python.exe scripts/build_srt.py \
+   <python> scripts/build_srt.py \
      --segments <out-dir>/segments.json --fixes fixes.json \
      [--source-url <链接>] --out <最终.srt>
    ```
@@ -130,7 +129,7 @@ B 站硬字幕视频 → 匿名取音频 → GPU 转写 538 段 → 75 处校对
 ## References（按需读取）
 
 - `references/environment-setup.md` —— 首次使用 / 缺依赖 / 模型缺失 / 换机部署时读。
-  含模型获取完整命令（hf-mirror 直链 5 文件 + 字节数校验）、venv 创建、GPU/CPU 取舍。
+  含模型获取完整命令（hf-mirror 直链 5 文件 + 字节数校验）、`skill-asr` 环境创建、GPU/CPU 取舍。
 - `references/troubleshooting.md` —— 运行失败或结果异常时读。
   按症状索引：DLL 加载失败、CUBLAS 状态错误、PyAV TypeError、403、
   SSL exit 35、断言失败、吞字/同音字、语言误判等。
